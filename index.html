@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayser Data Democratization</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Add the updated CSS -->
+    <style>
+        /* Layout reorganization for prompt gallery */
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between; /* Distribute space */
+            flex: 1;
+            padding: 1rem 2rem;
+            max-width: 1800px; /* Increased max-width for new layout */
+            margin: 0 auto;
+            width: 100%;
+            gap: 1rem;
+        }
+
+        /* New sidebar container for both galleries */
+        .sidebar-container {
+            width: 10%; /* As per user's later specification for prompt-gallery which now becomes sidebar */
+            max-width: 160px; /* As per user's later specification */
+            margin: 0;
+            padding: 0.75rem;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem; /* Space between galleries within the sidebar */
+        }
+
+        .prompt-gallery, .sql-prompt-gallery {
+            width: 100%; /* Galleries take full width of the sidebar */
+            max-width: none; /* Override any previous max-width */
+            margin: 0; /* Reset margin if any */
+            padding: 0; /* Reset padding, sidebar handles it */
+            background-color: transparent; /* Galleries are transparent, sidebar has bg */
+            box-shadow: none; /* Remove shadow from individual galleries */
+            text-align: center;
+        }
+
+        .prompt-gallery h3, .sql-prompt-gallery h3 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.75rem;
+        }
+
+        .prompt-suggestions {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 0.5rem;
+        }
+
+        .prompt-suggestion {
+            background-color: #f0f0f5;
+            color: #0071e3;
+            border: 1px solid #e1e1e6;
+            border-radius: 20px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .prompt-suggestion:hover {
+            background-color: #e1e1e6;
+            border-color: #d1d1d6;
+            transform: translateY(-1px);
+        }
+
+        .sql-prompt-suggestions {
+            display: flex;
+            flex-direction: column; /* SQL prompts also vertical in sidebar */
+            gap: 0.5rem;
+        }
+
+        .sql-prompt-suggestion {
+            background-color: #e6f2ff; /* Lighter blue */
+            color: #005bb5; /* Darker blue */
+            border: 1px solid #cce0ff;
+            border-radius: 20px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left; /* Align text left for consistency */
+        }
+
+        .sql-prompt-suggestion:hover {
+            background-color: #cce0ff;
+            border-color: #b3d1ff;
+            transform: translateY(-1px);
+        }
+
+        /* Adjust main content area to fit with left sidebar */
+        .chat-box-container {
+            width: 18%; /* As per user's specification */
+            max-width: 280px; /* As per user's specification */
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+            min-height: 500px;
+            padding: 0.75rem;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+        }
+        
+        .info-display-container {
+            width: 52%; /* As per user's specification */
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .info-display {
+            min-height: 600px;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .robot-interface {
+            width: 20%; /* As per user's specification */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+
+        /* SQL result in info tab */
+        .sql-code-info-card {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: left;
+            border-left: 5px solid #0071e3;
+        }
+
+        .sql-code-info-card h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .sql-code-display {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 0.75rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            white-space: pre;
+        }
+
+        
+
+        /* File Indicator Styles */
+        .file-indicator {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            font-size: 0.75rem;
+            color: #333;
+            z-index: 50;
+            display: none;
+            max-width: 180px;
+            text-align: left;
+        }
+        .file-indicator.visible {
+            display: block;
+        }
+        .file-indicator strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+            color: #0071e3;
+        }
+        .file-indicator span {
+            display: block;
+            margin-bottom: 0.1rem;
+            word-break: break-all;
+        }
+        .file-indicator .file-icon {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            margin-right: 4px;
+            vertical-align: middle;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .file-indicator .csv-icon {
+             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2328a745" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="10" y2="9"></line></svg>');
+        }
+        .file-indicator .pdf-icon {
+             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23dc3545" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M10.29 13.71a2.43 2.43 0 0 1 0-3.42 2.43 2.43 0 0 1 3.42 0"></path><path d="M13.71 17.12a2.43 2.43 0 0 1-3.42 0 2.43 2.43 0 0 1 0-3.42"></path></svg>');
+        }
+        .file-indicator .pptx-icon {
+             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23d14424" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><rect x="8" y="12" width="8" height="6" rx="1"></rect></svg>');
+        }
+        .file-indicator .docx-icon {
+             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%232b579a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><line x1="8" y1="9" x2="16" y2="9"></line></svg>');
+        }
+
+        /* Knowledge Indicator Styles */
+        .knowledge-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            font-size: 0.75rem;
+            color: #333;
+            z-index: 50;
+            display: none;
+            max-width: 180px;
+            text-align: left;
+            margin-top: 5px;
+        }
+        .knowledge-indicator.visible {
+            display: block;
+        }
+        .knowledge-indicator strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+            color: #6f42c1;
+        }
+        .knowledge-indicator span {
+            display: block;
+            margin-bottom: 0.1rem;
+            word-break: break-all;
+        }
+        .knowledge-indicator .knowledge-icon {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            margin-right: 4px;
+            vertical-align: middle;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .knowledge-indicator .clinical-icon {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%236f42c1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path><path d="M12 6v6l4 2"></path></svg>');
+        }
+
+        /* Knowledge Prompt Bubble Styles */
+        .knowledge-prompt {
+            background-color: #e9d8fd;
+            border-color: #c5a5f5;
+            color: #5a32a3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .knowledge-prompt .bubble-buttons {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .knowledge-prompt .bubble-button {
+            background-color: white;
+            border: 1px solid #c5a5f5;
+            color: #5a32a3;
+        }
+        .knowledge-prompt .bubble-button:hover {
+            background-color: #f8f0ff;
+        }
+        .knowledge-prompt .yes-button {
+            border-color: #6f42c1;
+            color: #6f42c1;
+        }
+        .knowledge-prompt .no-button {
+            border-color: #888;
+            color: #555;
+        }
+
+        /* Knowledge Loading Indicator Styles */
+        .knowledge-loading-indicator {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+            z-index: 60;
+        }
+        .knowledge-loading-circle {
+            width: 8px;
+            height: 8px;
+            background-color: #6f42c1;
+            border-radius: 50%;
+            animation: knowledge-bounce 1.4s infinite ease-in-out both;
+        }
+        .knowledge-loading-circle:nth-child(1) { animation-delay: -0.32s; }
+        .knowledge-loading-circle:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes knowledge-bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .sidebar-container, .info-display-container, .robot-interface, .chat-box-container {
+                width: 100%;
+                max-width: 800px;
+            }
+            .sidebar-container {
+                order: 0; /* Sidebar first */
+                flex-direction: row; /* Galleries side-by-side in sidebar */
+                flex-wrap: wrap;
+                justify-content: space-around;
+            }
+            .prompt-gallery, .sql-prompt-gallery {
+                 flex-basis: 48%; /* Two columns for galleries in sidebar */
+                 padding: 0.5rem; /* Add some padding back */
+            }
+            .prompt-suggestions, .sql-prompt-suggestions {
+                flex-direction: column; /* Keep suggestions vertical */
+            }
+
+            .chat-box-container { order: 1; margin-top: 1rem; height: 400px; }
+            .info-display-container { order: 2; }
+            .robot-interface { order: 3; }
+
+
+            .info-display {
+                min-height: 500px;
+            }
+
+            .file-indicator, .knowledge-indicator {
+                top: 5px;
+                right: 5px;
+                font-size: 0.7rem;
+                padding: 0.4rem 0.6rem;
+                max-width: 150px;
+            }
+            .knowledge-indicator {
+                left: 5px;
+                right: auto;
+                margin-top: 0;
+                top: 35px; /* Adjusted to account for file indicator potentially being above it if not in .controls */
+            }
+             /* If .controls div gets position:relative, these might need to be relative to .controls */
+            .controls .file-indicator, .controls .knowledge-indicator {
+                position: static; /* Or relative, depending on desired layout within .controls */
+                margin-top: 0.5rem; /* Example spacing if static */
+                max-width: 100%; /* Adjust width if needed */
+                /* Resetting top/left/right if they become static/relative within .controls */
+                top: auto; left: auto; right: auto; 
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 0.5rem;
+            }
+            .sidebar-container {
+                flex-direction: column; /* Stack galleries in sidebar */
+                align-items: center;
+            }
+            .prompt-gallery, .sql-prompt-gallery {
+                 flex-basis: 100%; /* Full width for each gallery in sidebar */
+            }
+
+            .prompt-suggestion, .sql-prompt-suggestion {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.6rem;
+            }
+
+            .file-indicator, .knowledge-indicator {
+                max-width: 120px;
+            }
+            .knowledge-indicator {
+                top: 30px; /* Adjusted */
+            }
+            .controls .file-indicator, .controls .knowledge-indicator {
+                font-size: 0.7rem; /* Match other responsive indicator styles */
+            }
+        }
+
+
+        /* Style for the unified file upload button */
+        .file-upload-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #0071e3;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.2);
+            min-width: 180px;
+            border: none; /* Added for button element */
+        }
+
+        .file-upload-button:hover {
+            background-color: #0077ed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
+        }
+        
+        /* Styles for file-upload-controls to hold both buttons */
+        .file-upload-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem; /* Space from content above */
+        }
+
+        /* Custom start button in speech bubble */
+        .bubble-button {
+            margin-left: 10px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background-color: white;
+            color: #4CAF50;
+            border: 1px solid white;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .bubble-button:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Style for manual start button */
+        #start-listening-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #0071e3;
+            color: white;
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+            width: 100%;
+            max-width: 240px;
+        }
+
+        #start-listening-btn:disabled {
+            background-color: #a0cff8;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        #start-listening-btn:not(:disabled):hover {
+            background-color: #005bb5;
+            transform: translateY(-1px);
+        }
+
+        #start-button {
+            display: none !important;
+        }
+
+        .speech-bubble {
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 0.75rem 1rem;
+        }
+        .speech-bubble span#file-loaded-message {
+            margin-right: 5px;
+        }
+
+        /* Chat Box Styles */
+        .chat-box-container h3 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+            border: 1px solid #e1e1e6;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #f9f9f9;
+        }
+        .chat-message {
+            padding: 0.4rem 0.6rem;
+            border-radius: 10px;
+            margin-bottom: 0.4rem;
+            font-size: 0.8rem;
+            line-height: 1.3;
+            max-width: 90%;
+        }
+        .chat-message.user {
+            background-color: #e6f2ff;
+            color: #005bb5;
+            margin-left: auto;
+            text-align: right;
+        }
+        .chat-message.bot, .chat-message.assistant {
+            background-color: #f0f0f5;
+            color: #333;
+            margin-right: auto;
+            text-align: left;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d1d6;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .chat-send-btn {
+            background-color: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .chat-send-btn:hover {
+            background-color: #005bb5;
+        }
+        .send-icon {
+            width: 12px; height: 12px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>');
+            background-size: contain;
+        }
+
+        /* Info Controls (Refresh Button) Styles - Rule for .info-controls removed */
+        .refresh-button { /* Style for the button itself is kept */
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .refresh-button:hover {
+            background-color: #5a6268;
+            transform: translateY(-1px);
+        }
+        .refresh-icon {
+            width: 12px; height: 12px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>');
+            background-size: contain;
+        }
+
+        /* Additional styles for new buttons in chat-box-container */
+        .chat-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 0.5rem;
+        }
+        .restart-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .restart-button:hover {
+            background-color: #c82333;
+            transform: translateY(-1px);
+        }
+        .restart-icon {
+            width: 12px; height: 12px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>');
+            background-size: contain;
+        }
+        .transcript-placeholder {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            padding: 1rem;
+            font-size: 0.8rem;
+        }
+        /* voice-toggle-btn styles removed as button is removed */
+        .mic-icon {
+            width: 16px; height: 16px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* New Robot Control Buttons Styles */
+        .robot-control-buttons {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            padding: 0.5rem 0;
+            margin-bottom: 0.5rem; /* Space before robot visual */
+        }
+        .robot-control-btn {
+            background-color: #f0f0f5;
+            color: #333;
+            border: 1px solid #e1e1e6;
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            min-width: 50px; /* Ensure buttons have some width */
+            text-align: center;
+        }
+        .robot-control-btn:hover {
+            background-color: #e1e1e6;
+            border-color: #d1d1d6;
+        }
+        .robot-control-btn .button-icon {
+            width: 20px;
+            height: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .folder-icon {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%230071e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>');
+        }
+        .inbox-icon {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%230071e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"></path><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>');
+        }
+        .output-icon {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%230071e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12L8 16M12 12L16 16M21 12H3M12 2L12 6"></path></svg>');
+        }
+
+        /* Popup Window Styles */
+        .popup-window {
+            display: none; /* Hidden by default */
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .popup-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .popup-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            line-height: 1;
+        }
+        .popup-close-btn:hover {
+            color: #333;
+        }
+        .popup-content {
+            padding: 1rem;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .file-explorer-path {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .file-explorer-files, .inbox-messages, .output-items {
+            font-size: 0.9rem;
+        }
+        .file-explorer-empty, .inbox-empty, .output-empty {
+            color: #888;
+            text-align: center;
+            padding: 1rem;
+            font-style: italic;
+        }
+
+        /* Styles for .controls and its children if indicators are moved inside */
+        .controls {
+            display: flex;
+            flex-direction: column; /* Stack button and indicators vertically */
+            align-items: center; /* Center items in the controls div */
+            gap: 0.5rem; /* Space between items */
+            width: 100%; /* Take full width of parent if needed */
+            margin-top: 0.5rem; /* Space above the controls block */
+        }
+        .controls .file-indicator, .controls .knowledge-indicator {
+            position: static; /* Override absolute positioning */
+            display: block; /* Ensure they are block for layout */
+            width: auto; /* Adjust width as needed, or max-width */
+            max-width: 90%; /* Example: prevent them from being too wide */
+            margin: 0.25rem 0; /* Add some vertical margin */
+            padding: 0.4rem 0.6rem; /* Consistent padding */
+            font-size: 0.7rem; /* Consistent font size */
+            text-align: left; /* Align text left */
+            /* Remove absolute positioning properties */
+            top: auto;
+            left: auto;
+            right: auto;
+            z-index: auto; /* Reset z-index */
+            background-color: #f0f0f5; /* Example background for visibility */
+            border: 1px solid #e1e1e6; /* Example border */
+        }
+        .controls .file-indicator.visible, .controls .knowledge-indicator.visible {
+            display: block; /* Ensure visibility works */
+        }
+
+        /* New styles for indicators-container if needed, e.g., for spacing */
+        .indicators-container { /* This was for a previous thought, .under-robot-indicators is the new class */
+            display: flex;
+            flex-direction: column; /* Stack indicators vertically */
+            align-items: center; /* Center them if they are not full width */
+            gap: 0.5rem; /* Space between indicators */
+            width: 100%; /* Or adjust as needed */
+            margin-top: 0.5rem; /* Space above the indicators block */
+        }
+        /* Styles for the new .under-robot-indicators wrapper and its children */
+        .under-robot-indicators {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center indicators if they are not full width */
+            gap: 0.5rem; /* Space between file and knowledge indicator */
+            width: 100%;
+            margin-top: 0.75rem; /* Space below the robot visual */
+            padding: 0 0.5rem; /* Padding if indicators are narrower than container */
+        }
+
+        .under-robot-indicators .file-indicator,
+        .under-robot-indicators .knowledge-indicator {
+            position: static; /* Override absolute positioning */
+            display: block; /* Ensure they are block for layout */
+            width: 100%; 
+            max-width: 200px; /* Max width for these indicators */
+            margin: 0.25rem 0; /* Vertical margin */
+            padding: 0.4rem 0.6rem; /* Consistent padding */
+            font-size: 0.7rem; /* Consistent font size */
+            text-align: left; /* Align text left */
+            /* Reset absolute positioning properties */
+            top: auto;
+            left: auto;
+            right: auto;
+            z-index: auto; /* Reset z-index */
+            background-color: #f0f0f5; /* Example background */
+            border: 1px solid #e1e1e6; /* Example border */
+            border-radius: 8px; /* Match other indicator styles */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07); /* Subtle shadow */
+        }
+        .under-robot-indicators .file-indicator.visible,
+        .under-robot-indicators .knowledge-indicator.visible {
+            display: block; /* Ensure visibility works */
+        }
+        /* Override specific top/right/left for indicators when inside .under-robot-indicators */
+        .under-robot-indicators .file-indicator {
+            right: auto; /* Remove absolute right positioning */
+        }
+        .under-robot-indicators .knowledge-indicator {
+            left: auto; /* Remove absolute left positioning */
+            margin-top: 0; /* Remove specific margin-top for knowledge indicator if not needed */
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="header">
+    <h1>Bayser Data Democratization</h1>
+    <div id="super-user-title" class="super-user-title" style="display: none;">SUPER USER</div>
+</div>
+
+<div class="main-container">
+<!-- Left sidebar with both galleries -->
+<div class="sidebar-container">
+    <!-- Regular prompt gallery -->
+    <div class="prompt-gallery">
+        <h3>Prompt Suggestions</h3>
+        <div class="prompt-suggestions">
+            <button class="prompt-suggestion">Summarize the Data in three points.</button>
+            <button class="prompt-suggestion">What can I do with this Data?</button>
+            <button class="prompt-suggestion">What are the key points in this Data?</button>
+        </div>
+    </div>
+    
+    <!-- SQL prompt gallery - moved from info-display-container -->
+    <div class="sql-prompt-gallery" id="sql-prompt-gallery">
+            <h3>SQL Query Suggestions</h3>
+            <div class="sql-prompt-suggestions">
+                <button class="sql-prompt-suggestion">Count all rows in table.</button>
+                <button class="sql-prompt-suggestion">Show first 10 rows of data.</button>
+                <button class="sql-prompt-suggestion">Show me a sample data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Information display container -->
+    <div class="info-display-container">
+        <!-- Remove the original info-controls div since we moved its content -->
+        <!-- <div class="info-controls">
+            <button id="refresh-info-btn" class="refresh-button">
+                <span class="button-icon refresh-icon"></span>
+                <span class="button-text">Clear Displays</span>
+            </button>
+        </div> -->
+
+        <div class="info-display" id="info-display">
+            <div id="info-container">
+                <!-- Welcome card content updated by JS -->
+                <div class="info-card show" id="welcome-card">
+                    <!-- Initial content -->
+                    <h3>Upload Data to Begin</h3>
+                    <p>.</p>
+                    <p class="upload-hint"></p>
+                </div>            </div>
+
+            <!-- Unified File Upload Control - Updated to include both buttons -->
+<div class="file-upload-controls">
+    <button id="google-drive-upload-btn" class="file-upload-button">
+        <span class="upload-icon"></span> Load from Cloud
+    </button>
+    
+    <button id="local-file-upload-btn" class="file-upload-button">
+        <span class="upload-icon"></span> Load Local File
+    </button>
+    
+    <!-- Hidden file input for local uploads -->
+    <input type="file" id="unified-upload" style="display: none;" accept=".csv,.pdf,.pptx,.docx,.doc">
+    
+    <!-- Moved the refresh button here -->
+    <button id="refresh-info-btn" class="refresh-button">
+        <span class="button-icon refresh-icon"></span>
+        <span class="button-text">Clear Display</span>
+    </button>
+</div>
+
+            <!-- Hidden players (remain as placeholders) -->
+            <div id="podcast-player" class="media-player" style="display: none;"></div>
+            <div id="song-player" class="media-player" style="display: none;"></div>
+            <div id="video-player" class="media-player" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Chat transcript container -->
+    <div class="chat-box-container">
+        <h3>Conversation Transcript</h3>
+        
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will be added here dynamically -->
+            <div class="transcript-placeholder">
+                Type your questions below or use the robot microphone for voice.
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Type your message here..." aria-label="Type your message">
+            <button id="chat-send-btn" class="chat-send-btn">
+                <span class="send-icon"></span>
+                Send
+            </button>
+            <!-- Removed voice-toggle-btn -->
+        </div>
+    </div>
+
+    <!-- Robot interface - START OF REPLACEMENT -->
+    <div class="robot-interface">
+    <!-- Robot Control Buttons -->
+    <div class="robot-control-buttons">
+        <button id="file-explorer-btn" class="robot-control-btn">
+            <span class="button-icon folder-icon"></span>
+            <span class="button-text">Files</span>
+        </button>
+        <button id="inbox-btn" class="robot-control-btn">
+            <span class="button-icon inbox-icon"></span>
+            <span class="button-text">Inbox</span>
+        </button>
+        <button id="output-btn" class="robot-control-btn">
+            <span class="button-icon output-icon"></span>
+            <span class="button-text">Outbox</span>
+        </button>
+    </div>
+
+    <div class="robot-container" id="robot">
+        <!-- Robot content remains unchanged -->
+        <div class="knowledge-loading-indicator" style="display: none;">
+            <div class="knowledge-loading-circle"></div>
+            <div class="knowledge-loading-circle"></div>
+            <div class="knowledge-loading-circle"></div>
+        </div>
+        <!-- Robot ears -->
+        <div class="robot-ear left" id="robot-ear-left"></div>
+        <div class="robot-ear right" id="robot-ear-right"></div>
+        <!-- Original robot parts -->
+        <div class="robot-antenna"></div>
+        <div class="robot-antenna-dot"></div>
+        <div class="robot-head">
+            <div class="robot-eye left"></div>
+            <div class="robot-eye right"></div>
+            <div class="robot-eye third-eye" style="display: none;"></div>
+            <div class="robot-mouth"></div>
+        </div>
+        <div class="robot-body">
+            <div class="robot-indicator"></div>
+            <div class="robot-chest-pattern">
+                <div class="pattern-dot"></div>
+                <div class="pattern-dot"></div>
+                <div class="pattern-dot"></div>
+                <div class="pattern-dot"></div>
+                <div class="pattern-dot"></div>
+                <div class="pattern-dot"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Star Rating Section -->
+    <div class="star-rating-container">
+        <div class="star-rating-title">Rate this response:</div>
+        <div class="star-rating" id="star-rating">
+            <button class="star-btn" data-rating="1">★</button>
+            <button class="star-btn" data-rating="2">★</button>
+            <button class="star-btn" data-rating="3">★</button>
+            <button class="star-btn" data-rating="4">★</button>
+            <button class="star-btn" data-rating="5">★</button>
+        </div>
+    </div> 
+    
+   
+    
+    <!-- Super User Button - Moved here under Ask Me button -->
+    <div class="super-user-container">
+        <button id="super-user-btn" class="super-user-button">
+            <span class="button-text">Super User</span>
+        </button>
+    </div>
+    
+    <!-- Indicators container - positioned right under the robot -->
+<div class="under-robot-indicators">
+    <div class="indicators-row">
+        <div class="file-indicator" id="file-indicator">
+            <strong>Loaded Files:</strong>
+            <span id="csv-file-indicator" style="display: none;"></span>
+            <span id="pdf-file-indicator" style="display: none;"></span>
+            <span id="pptx-file-indicator" style="display: none;"></span>
+            <span id="docx-file-indicator" style="display: none;"></span>
+        </div>
+
+        <div id="knowledge-indicator" class="knowledge-indicator">
+            <strong>Knowledge Base:</strong>
+            <span id="clinical-trials-indicator" style="display: none;"><span class="knowledge-icon clinical-icon"></span> Clinical Trials Data</span>
+        </div>
+    </div>
+    <!-- Robot feedback will be inserted here by JavaScript -->
+</div>
+
+    <!-- Settings panel (hidden by default) -->
+    <div class="settings-panel" id="settings-panel" style="display: none;">
+        <!-- Settings content -->
+    </div>
+</div>
+    <!-- Robot interface - END OF REPLACEMENT -->
+</div>
+
+<!-- Add the popup windows -->
+<div id="file-explorer-popup" class="popup-window">
+    <div class="popup-header">
+        <h3>File Explorer</h3>
+        <button class="popup-close-btn">×</button>
+    </div>
+    <div class="popup-content">
+        <div class="file-explorer-path">Knowledge</div>
+        <div class="file-explorer-files">
+            <!-- Files will be displayed here dynamically -->
+            <div class="file-explorer-empty">No files to display</div>
+        </div>
+    </div>
+</div>
+
+<div id="inbox-popup" class="popup-window">
+    <div class="popup-header">
+        <h3>Inbox</h3>
+        <button class="popup-close-btn">×</button>
+    </div>
+    <div class="popup-content">
+        <div class="inbox-messages">
+            <!-- Inbox content will be displayed here -->
+            <div class="inbox-empty">No messages in inbox</div>
+        </div>
+    </div>
+</div>
+
+<div id="output-popup" class="popup-window">
+    <div class="popup-header">
+        <h3>Output</h3>
+        <button class="popup-close-btn">×</button>
+    </div>
+    <div class="popup-content">
+        <div class="output-items">
+            <!-- Output content will be displayed here -->
+            <div class="output-empty">No output items</div>
+        </div>
+    </div>
+</div>
+
+
+    <div id="robot-message" class="robot-message" style="display: none;">
+    </div>
+
+<!-- Robot's Blessing button removed -->
+
+    <script src="script.js"></script>
+    <script>
+        // File Indicator Update Logic
+        document.addEventListener('DOMContentLoaded', function() {
+            // const fileIndicator = document.getElementById('file-indicator'); // This will now refer to the one in robot-interface (or the fixed one if it appears first in DOM scan, ID conflict)
+            // The script should use the more specific selector for the indicator within the robot interface.
+            const csvIndicatorSpan = document.getElementById('csv-file-indicator');
+            const pdfIndicatorSpan = document.getElementById('pdf-file-indicator');
+            const pptxIndicatorSpan = document.getElementById('pptx-file-indicator');
+            const docxIndicatorSpan = document.getElementById('docx-file-indicator');
+            
+
+
+            window.updateFileIndicator = function() {
+                let csvLoaded = false;
+                let pdfLoaded = false;
+                let pptxLoaded = false;
+                let docxLoaded = false;
+
+                const currentCsvFileName = typeof csvFileName !== 'undefined' ? csvFileName : null;
+                const currentPdfFileName = typeof pdfFileName !== 'undefined' ? pdfFileName : null;
+                const currentPptxFileName = typeof pptxFileName !== 'undefined' ? pptxFileName : null;
+                const currentDocxFileName = typeof docxFileName !== 'undefined' ? docxFileName : null;
+
+                if (currentCsvFileName && csvIndicatorSpan) {
+                    csvIndicatorSpan.innerHTML = `<span class="file-icon csv-icon"></span> ${currentCsvFileName}`;
+                    csvIndicatorSpan.style.display = 'block';
+                    csvLoaded = true;
+                } else if (csvIndicatorSpan) {
+                    csvIndicatorSpan.style.display = 'none';
+                }
+
+                if (currentPdfFileName && pdfIndicatorSpan) {
+                    pdfIndicatorSpan.innerHTML = `<span class="file-icon pdf-icon"></span> ${currentPdfFileName}`;
+                    pdfIndicatorSpan.style.display = 'block';
+                    pdfLoaded = true;
+                } else if (pdfIndicatorSpan) {
+                    pdfIndicatorSpan.style.display = 'none';
+                }
+
+                if (currentPptxFileName && pptxIndicatorSpan) {
+                    pptxIndicatorSpan.innerHTML = `<span class="file-icon pptx-icon"></span> ${currentPptxFileName}`;
+                    pptxIndicatorSpan.style.display = 'block';
+                    pptxLoaded = true;
+                } else if (pptxIndicatorSpan) {
+                    pptxIndicatorSpan.style.display = 'none';
+                }
+
+                if (currentDocxFileName && docxIndicatorSpan) {
+                    docxIndicatorSpan.innerHTML = `<span class="file-icon docx-icon"></span> ${currentDocxFileName}`;
+                    docxIndicatorSpan.style.display = 'block';
+                    docxLoaded = true;
+                } else if (docxIndicatorSpan) {
+                    docxIndicatorSpan.style.display = 'none';
+                }
+                
+                // This targets the file indicator specifically within the robot interface
+                const activeFileIndicator = document.querySelector('.robot-interface .file-indicator');
+                if (activeFileIndicator && (csvLoaded || pdfLoaded || pptxLoaded || docxLoaded)) {
+                    activeFileIndicator.classList.add('visible');
+                } else if (activeFileIndicator) {
+                    activeFileIndicator.classList.remove('visible');
+                }
+
+                // Also update the knowledge indicator visibility if needed (example)
+                const knowledgeIndicator = document.querySelector('.robot-interface .knowledge-indicator');
+                // Assuming some condition for knowledgeIndicator visibility, e.g., a global flag
+                // if (knowledgeIndicator && someKnowledgeBaseActive) {
+                //     knowledgeIndicator.classList.add('visible');
+                // } else if (knowledgeIndicator) {
+                //     knowledgeIndicator.classList.remove('visible');
+                // }
+            };
+
+            if (typeof window.updateFileIndicator === 'function') {
+                window.updateFileIndicator();
+            }
+
+            // Popup handling logic
+            const fileExplorerBtn = document.getElementById('file-explorer-btn');
+            const inboxBtn = document.getElementById('inbox-btn');
+            const outputBtn = document.getElementById('output-btn');
+
+            const fileExplorerPopup = document.getElementById('file-explorer-popup');
+            const inboxPopup = document.getElementById('inbox-popup');
+            const outputPopup = document.getElementById('output-popup');
+
+            const popups = [fileExplorerPopup, inboxPopup, outputPopup];
+            const closeButtons = document.querySelectorAll('.popup-close-btn');
+
+            function openPopup(popup) {
+                popups.forEach(p => p.style.display = 'none'); // Close other popups
+                if (popup) {
+                    popup.style.display = 'flex';
+                }
+            }
+
+            function closePopup(popup) {
+                if (popup) {
+                    popup.style.display = 'none';
+                }
+            }
+
+            if (fileExplorerBtn) fileExplorerBtn.addEventListener('click', () => openPopup(fileExplorerPopup));
+            if (inboxBtn) inboxBtn.addEventListener('click', () => openPopup(inboxPopup));
+            if (outputBtn) outputBtn.addEventListener('click', () => openPopup(outputPopup));
+
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    closePopup(btn.closest('.popup-window'));
+                });
+            });
+
+            // Close popup if clicked outside
+            window.addEventListener('click', (event) => {
+                popups.forEach(popup => {
+                    if (popup && popup.style.display === 'flex' && !popup.contains(event.target) && 
+                        event.target !== fileExplorerBtn && event.target !== inboxBtn && event.target !== outputBtn &&
+                        !fileExplorerBtn.contains(event.target) && !inboxBtn.contains(event.target) && !outputBtn.contains(event.target) ) {
+                        closePopup(popup);
+                    }
+                });
+            });
+
+
+        });
+    </script>
+    <script>
+        // SQL Execution Confirmation Script
+        document.addEventListener('DOMContentLoaded', function() {
+            window.lastGeneratedSql = '';
+            window.waitingForSqlExecutionConfirmation = false;
+            const originalSpeakText = window.speakText;
+
+            window.speakText = function(text) {
+                if (text.includes("Would you like me to execute this query")) {
+                    console.log("Setting SQL execution confirmation flag");
+                    window.waitingForSqlExecutionConfirmation = true;
+                }
+                if (typeof originalSpeakText === 'function') {
+                    originalSpeakText(text);
+                } else {
+                    console.error("Original speakText function not available!");
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    window.speechSynthesis.speak(utterance);
+                }
+            };
+        });
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const robotMicBtn = document.getElementById('robot-mic-btn');
+        if (robotMicBtn) {
+          robotMicBtn.addEventListener('click', function() {
+            if (typeof toggleMicrophone === 'function') {
+              // toggleMicrophone(); // The onclick attribute already handles this in original script.js if present
+              // If toggleMicrophone is called directly by script.js, this classList.toggle might be redundant or conflict
+              // Assuming toggleMicrophone updates microphoneEnabled variable
+              // this.classList.toggle('active', microphoneEnabled); 
+            } else {
+              console.error("toggleMicrophone function not available");
+            }
+          });
+        }
+        
+        // voice-toggle-btn was removed, so no listener for it.
+        
+        const autoInit = function() {
+          const hasFiles = typeof csvData !== 'undefined' && csvData ||
+                         typeof pdfContent !== 'undefined' && pdfContent ||
+                         typeof pptxData !== 'undefined' && pptxData ||
+                         typeof docxContent !== 'undefined' && docxContent;
+                         
+          if (hasFiles && typeof manualStartMicrophone === 'function' && 
+              typeof microphoneInitialized !== 'undefined' && !microphoneInitialized) {
+            console.log("Auto-initializing microphone based on file detection...");
+            setTimeout(manualStartMicrophone, 1500);
+          }
+        };
+        
+        setTimeout(autoInit, 2000);
+        
+        if (typeof updateFileIndicator === 'function') {
+          const originalUpdateFileIndicator = updateFileIndicator;
+          window.updateFileIndicator = function() {
+            originalUpdateFileIndicator();
+            setTimeout(autoInit, 1000);
+          };
+        }
+      });
+    </script>
+    <div class="file-indicator-fixed" id="file-indicator-fixed"> <!-- Changed ID to avoid conflict -->
+    <strong>Loaded Files:</strong>
+    <span id="csv-file-indicator-fixed" style="display: none;"></span>
+    <span id="pdf-file-indicator-fixed" style="display: none;"></span>
+    <span id="pptx-file-indicator-fixed" style="display: none;"></span>
+    <span id="docx-file-indicator-fixed" style="display: none;"></span>
+    <span id="txt-file-indicator-fixed" style="display: none;"></span>
+</div>
+
+<!-- Google Drive Picker Modal -->
+<div id="google-drive-picker-modal" class="popup-window">
+    <div class="popup-header">
+        <h3>Select File from Cloud</h3>
+        <button class="popup-close-btn" onclick="closeGoogleDrivePicker()">×</button>
+    </div>
+    <div class="popup-content">
+        <div id="google-drive-loading">Loading files...</div>
+        <div id="google-drive-files" style="display: none;"></div>
+    </div>
+</div>
+<!-- Add this hidden input element inside your body tag -->
+<input type="file" id="unified-upload" accept=".csv,.pdf,.pptx,.docx,.doc" style="display: none;">
+</body>
+</html>
