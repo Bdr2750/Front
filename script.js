@@ -7007,4 +7007,5 @@ document.addEventListener('DOMContentLoaded', () => {
             mouth.style.zIndex = '999';
         }
     }, 500);
+
 }); // --- END OF DOMContentLoaded ---
