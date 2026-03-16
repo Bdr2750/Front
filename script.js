@@ -914,7 +914,7 @@ let knowledgeLoadingInProgress = false;
 let thinkingSound = null;
 
 // Backend API URL - CHANGE THIS TO YOUR FLASK BACKEND URL
-const BACKEND_API_URL = "http://localhost:5001";
+const BACKEND_API_URL = "https://back-v3cj.onrender.com";
 
 // Gemini API Configuration
 const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"; //  less relevant bevause backend handles API calls
