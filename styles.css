@@ -3193,20 +3193,40 @@ video {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background-color: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    font-size: 0.85rem;
-    color: #333;
     display: none;
-    max-width: 300px;
-    text-align: left;
     z-index: 100;
+    text-align: left;
 }
 
 .file-indicator-fixed.visible {
     display: block;
+}
+
+.file-toggle-btn {
+    background: none;
+    border: none;
+    padding: 2px 6px;
+    font-size: 0.65rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    text-align: left;
+}
+
+.file-toggle-btn::before {
+    content: '\u00B7\u00B7\u00B7';
+    letter-spacing: 1px;
+}
+
+.file-toggle-btn:hover {
+    color: #999;
+}
+
+.file-toggle-btn span {
+    display: none;
+    font-size: 0.65rem;
+    color: #aaa;
+    padding: 1px 0;
 }
 
 /* Bottom indicators container - This was an alternative, .under-robot-indicators is the current one */
@@ -3233,7 +3253,17 @@ video {
     width: 100%;
 }
 
-.under-robot-indicators .file-indicator,
+.under-robot-indicators .file-indicator {
+    background: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    font-size: 0.85rem;
+    color: #333;
+    display: none;
+    width: 48%;
+}
+
 .under-robot-indicators .knowledge-indicator {
     background-color: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
