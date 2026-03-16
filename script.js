@@ -914,7 +914,7 @@ let knowledgeLoadingInProgress = false;
 let thinkingSound = null;
 
 // Backend API URL - CHANGE THIS TO YOUR FLASK BACKEND URL
-const BACKEND_API_URL = "https://back-v3cj.onrender.com";
+const BACKEND_API_URL = "http://localhost:5001";
 
 // Gemini API Configuration
 const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"; //  less relevant bevause backend handles API calls
@@ -1290,8 +1290,8 @@ function initializeInfoPanel() {
     } else {
         welcomeCard.innerHTML = `
             <div class="welcome-content">
-                <h3>Upload Data to Begin</h3>
-                <p class="upload-hint">Click the 'Upload Data' button below to start.</p>
+                <h3></h3>
+                <p class="upload-hint"></p>
             </div>
         `;
         if (startListeningBtn) {
@@ -4309,58 +4309,84 @@ function sendToGemini(userMessage) {
         });
 }
 
+// Toggle file names inside the button
+function toggleFileList() {
+    const btn = document.getElementById('file-indicator');
+    if (!btn) return;
+    const expanded = btn.dataset.expanded === 'true';
+    btn.dataset.expanded = expanded ? 'false' : 'true';
+    const spans = btn.querySelectorAll('span');
+    spans.forEach(s => {
+        if (s.dataset.loaded === 'true') {
+            s.style.display = expanded ? 'none' : 'block';
+        }
+    });
+}
+
 // Original global function, will be wrapped by DOMContentLoaded
 function updateFileIndicator() {
     let csvLoaded = false, pdfLoaded = false, pptxLoaded = false, docxLoaded = false, transcriptLoaded = false;
-    const fileIndicatorEl = document.getElementById('file-indicator');
+    const btn = document.getElementById('file-indicator');
     const csvSpanEl = document.getElementById('csv-file-indicator');
     const pdfSpanEl = document.getElementById('pdf-file-indicator');
     const pptxSpanEl = document.getElementById('pptx-file-indicator');
     const docxSpanEl = document.getElementById('docx-file-indicator');
 
     if (csvFileName && csvSpanEl) {
-        csvSpanEl.innerHTML = `<span class="file-icon csv-icon"></span> ${csvFileName}`;
-        csvSpanEl.style.display = 'block';
+        csvSpanEl.textContent = csvFileName;
+        csvSpanEl.dataset.loaded = 'true';
         csvLoaded = true;
     } else if (csvSpanEl) {
         csvSpanEl.style.display = 'none';
+        csvSpanEl.dataset.loaded = 'false';
     }
 
     if (pdfFileName && pdfSpanEl) {
-        pdfSpanEl.innerHTML = `<span class="file-icon pdf-icon"></span> ${pdfFileName}`;
-        pdfSpanEl.style.display = 'block';
+        pdfSpanEl.textContent = pdfFileName;
+        pdfSpanEl.dataset.loaded = 'true';
         pdfLoaded = true;
     } else if (pdfSpanEl) {
         pdfSpanEl.style.display = 'none';
+        pdfSpanEl.dataset.loaded = 'false';
     }
 
     if (pptxFileName && pptxSpanEl) {
-        pptxSpanEl.innerHTML = `<span class="file-icon pptx-icon"></span> ${pptxFileName}`;
-        pptxSpanEl.style.display = 'block';
+        pptxSpanEl.textContent = pptxFileName;
+        pptxSpanEl.dataset.loaded = 'true';
         pptxLoaded = true;
     } else if (pptxSpanEl) {
         pptxSpanEl.style.display = 'none';
+        pptxSpanEl.dataset.loaded = 'false';
     }
 
     if (docxFileName && docxSpanEl) {
-        docxSpanEl.innerHTML = `<span class="file-icon docx-icon"></span> ${docxFileName}`;
-        docxSpanEl.style.display = 'block';
+        docxSpanEl.textContent = docxFileName;
+        docxSpanEl.dataset.loaded = 'true';
         docxLoaded = true;
     } else if (docxSpanEl) {
         docxSpanEl.style.display = 'none';
+        docxSpanEl.dataset.loaded = 'false';
     }
 
-    // Handle transcript files in superuser mode
     if (isSuperUser && transcriptFileName) {
         transcriptLoaded = true;
-        // You can add a transcript indicator if you have one in your HTML
     }
 
-    // Only show file indicator if at least one file is loaded
-    if (fileIndicatorEl && (csvLoaded || pdfLoaded || pptxLoaded || docxLoaded || transcriptLoaded)) {
-        fileIndicatorEl.classList.add('visible');
-    } else if (fileIndicatorEl) {
-        fileIndicatorEl.classList.remove('visible');
+    // Show button only if files are loaded, but keep file names hidden until clicked
+    if (btn && (csvLoaded || pdfLoaded || pptxLoaded || docxLoaded || transcriptLoaded)) {
+        btn.style.display = 'inline-block';
+    } else if (btn) {
+        btn.style.display = 'none';
+    }
+
+    const fixedIndicator = document.getElementById('file-indicator-fixed');
+    if (fixedIndicator) {
+        const hasFiles = csvLoaded || pdfLoaded || pptxLoaded || docxLoaded;
+        if (hasFiles) {
+            fixedIndicator.classList.add('visible');
+        } else {
+            fixedIndicator.classList.remove('visible');
+        }
     }
 }
 
@@ -5291,6 +5317,76 @@ function ensurePromptSuggestionsWork() {
             }
         });
     });
+}
+
+// Auto-load the default CSV file (datacatalog_jan2026.csv) from Google Drive on page load
+async function autoLoadDefaultCSV() {
+    const DEFAULT_CSV_NAME = 'datacatalog_jan2026.csv';
+    console.log(`Auto-loading default CSV: ${DEFAULT_CSV_NAME}...`);
+
+    try {
+        // List files in the normal folder to find the CSV by name
+        const listResponse = await fetch(`${BACKEND_API_URL}/api/list-drive-folder`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ folderId: NORMAL_FOLDER_ID })
+        });
+
+        const listData = await listResponse.json();
+
+        if (!listData.success || !listData.files) {
+            console.error('Failed to list Drive folder for auto-load:', listData.error);
+            return;
+        }
+
+        const targetFile = listData.files.find(f => f.name.toLowerCase() === DEFAULT_CSV_NAME.toLowerCase());
+        if (!targetFile) {
+            console.warn(`Default CSV "${DEFAULT_CSV_NAME}" not found in Drive folder.`);
+            return;
+        }
+
+        // Download and process the file
+        const response = await fetch(`${BACKEND_API_URL}/api/download-and-process-drive-file`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileId: targetFile.id, fileName: targetFile.name })
+        });
+
+        if (!response.ok) {
+            console.error(`Failed to download default CSV: HTTP ${response.status}`);
+            return;
+        }
+
+        const result = await response.json();
+
+        if (result.success !== false && result.type === 'csv' && result.data) {
+            csvData = result.data;
+            csvFileName = result.fileName || DEFAULT_CSV_NAME;
+            fullData = result.data.raw;
+            console.log(`Default CSV "${csvFileName}" loaded successfully.`);
+            // silently loaded, no popup
+            updateFileIndicator();
+            showPromptGalleries();
+            setTimeout(() => {
+                generateDynamicSuggestions();
+                generateDynamicSQLSuggestions();
+            }, 500);
+
+            // Enable the start listening button
+            const startListeningBtn = document.getElementById('start-listening-btn');
+            if (startListeningBtn) {
+                startListeningBtn.disabled = false;
+                startListeningBtn.style.opacity = '1';
+                startListeningBtn.style.cursor = 'pointer';
+                startListeningBtn.title = 'Click to start voice interaction';
+                startListeningBtn.style.display = 'inline-flex';
+            }
+        } else {
+            console.error('Unexpected response format for default CSV:', result);
+        }
+    } catch (error) {
+        console.error('Error auto-loading default CSV:', error);
+    }
 }
 
 async function autoLoadAllFilesUserMode() {
@@ -6301,6 +6397,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Hide galleries on initial load
     hidePromptGalleries();
+
+    // Auto-load the default CSV from Google Drive
+    setTimeout(() => autoLoadDefaultCSV(), 1500);
 
     // NEW: Set up interactive robot parts
     setupRobotInteractions();
