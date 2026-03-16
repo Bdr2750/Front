@@ -183,27 +183,12 @@
             position: absolute;
             top: 0;
             right: 0;
-            background-color: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border-radius: 8px;
-            padding: 0.5rem 0.75rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            font-size: 0.75rem;
-            color: #333;
             z-index: 50;
             display: none;
-            max-width: 180px;
             text-align: left;
         }
         .file-indicator.visible {
             display: block;
-        }
-        .file-indicator strong {
-            display: block;
-            margin-bottom: 0.25rem;
-            font-weight: 600;
-            color: #0071e3;
         }
         .file-indicator span {
             display: block;
@@ -910,8 +895,8 @@
                 <!-- Welcome card content updated by JS -->
                 <div class="info-card show" id="welcome-card">
                     <!-- Initial content -->
-                    <h3>Upload Data to Begin</h3>
-                    <p>.</p>
+                    <h3></h3>
+                    <p></p>
                     <p class="upload-hint"></p>
                 </div>            </div>
 
@@ -1036,13 +1021,12 @@
     <!-- Indicators container - positioned right under the robot -->
 <div class="under-robot-indicators">
     <div class="indicators-row">
-        <div class="file-indicator" id="file-indicator">
-            <strong>Loaded Files:</strong>
-            <span id="csv-file-indicator" style="display: none;"></span>
-            <span id="pdf-file-indicator" style="display: none;"></span>
-            <span id="pptx-file-indicator" style="display: none;"></span>
-            <span id="docx-file-indicator" style="display: none;"></span>
-        </div>
+        <button class="file-toggle-btn" id="file-indicator" onclick="toggleFileList()" style="display:none;">
+            <span id="csv-file-indicator" style="display:none;"></span>
+            <span id="pdf-file-indicator" style="display:none;"></span>
+            <span id="pptx-file-indicator" style="display:none;"></span>
+            <span id="docx-file-indicator" style="display:none;"></span>
+        </button>
 
         <div id="knowledge-indicator" class="knowledge-indicator">
             <strong>Knowledge Base:</strong>
@@ -1171,14 +1155,12 @@
                     activeFileIndicator.classList.remove('visible');
                 }
 
-                // Also update the knowledge indicator visibility if needed (example)
-                const knowledgeIndicator = document.querySelector('.robot-interface .knowledge-indicator');
-                // Assuming some condition for knowledgeIndicator visibility, e.g., a global flag
-                // if (knowledgeIndicator && someKnowledgeBaseActive) {
-                //     knowledgeIndicator.classList.add('visible');
-                // } else if (knowledgeIndicator) {
-                //     knowledgeIndicator.classList.remove('visible');
-                // }
+                // Update the toggle button file count
+                const fileCount = [csvLoaded, pdfLoaded, pptxLoaded, docxLoaded].filter(Boolean).length;
+                const toggleCount = document.getElementById('file-toggle-count');
+                if (toggleCount) {
+                    toggleCount.textContent = `${fileCount} file${fileCount !== 1 ? 's' : ''}`;
+                }
             };
 
             if (typeof window.updateFileIndicator === 'function') {
@@ -1298,7 +1280,7 @@
         }
       });
     </script>
-    <div class="file-indicator-fixed" id="file-indicator-fixed"> <!-- Changed ID to avoid conflict -->
+    <div class="file-indicator-fixed" id="file-indicator-fixed">
     <strong>Loaded Files:</strong>
     <span id="csv-file-indicator-fixed" style="display: none;"></span>
     <span id="pdf-file-indicator-fixed" style="display: none;"></span>
